@@ -14,7 +14,7 @@ using namespace std;
 using namespace Pythia8;
 using namespace Eigen;
 
-ArrayXXd run(ArrayXd const & params, size_t nEvents=10000, bool verbose=false, bool writeYODA=false)
+ArrayXXd run(ArrayXd const & params, size_t nEvents=10000, int seed=1234, bool verbose=false, bool writeYODA=false)
 {
   Pythia pythia;
 
@@ -27,6 +27,8 @@ ArrayXXd run(ArrayXd const & params, size_t nEvents=10000, bool verbose=false, b
   int    nAbort    = pythia.mode("Main:timesAllowErrors");
 
   // Hard coded physics setup
+  pythia.readString("Random:setSeed = on");
+  pythia.readString("Random:seed = " + std::to_string(seed));
   pythia.readString("Beams:idA = 11");
   pythia.readString("Beams:idB = -11");
   pythia.readString("Beams:eCM = 91.2");
@@ -123,8 +125,8 @@ ArrayXXd run(ArrayXd const & params, size_t nEvents=10000, bool verbose=false, b
   {
       for (auto b : ao->bins()) 
       {
-          data(0,currbin) = b.area();
-          data(1,currbin) = b.areaErr();
+          data(0,currbin) = b.height();
+          data(1,currbin) = b.heightErr();
           currbin++;
       }
   }
@@ -141,7 +143,7 @@ int main(int argc, char* argv[]) {
     params[0] = atof(argv[1]);
     params[1] = atof(argv[2]);
     params[2] = atof(argv[3]);
-    ArrayXXd result = run(params, atoi(argv[4]), bool(atoi(argv[5])), bool(atoi(argv[6])));
+    ArrayXXd result = run(params, atoi(argv[4]), atoi(argv[5]), bool(atoi(argv[6])), bool(atoi(argv[7])));
     std::cerr << result.transpose() << "\n";
     return 0;
 }
