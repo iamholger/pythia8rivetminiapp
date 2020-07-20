@@ -98,6 +98,8 @@ ArrayXXd run(ArrayXd const & params, size_t nEvents=10000, int seed=1234, bool v
       };
   vector<const YODA::Histo1D*> output;
 
+  vector<double> SFs;
+
   auto raos = ah->getRivetAOs();
 
   // Cast and make sure order is always the same
@@ -110,6 +112,8 @@ ArrayXXd run(ArrayXd const & params, size_t nEvents=10000, int seed=1234, bool v
         {
             auto active=rao.get()->activeYODAPtr();
             output.push_back(dynamic_cast<const YODA::Histo1D*> (active.get()));
+            double sc = std::stod(rao->annotation("ScaledBy"));
+            SFs.push_back(sc);
         }
       }
   }
@@ -117,19 +121,38 @@ ArrayXXd run(ArrayXd const & params, size_t nEvents=10000, int seed=1234, bool v
 
   // Data wrangling
 
-  size_t nbins(0), currbin(0);
+  size_t nbins(0), currbin(0), currao(0);
   for (auto ao : output) nbins+= ao->numBins();
 
-  ArrayXXd data(2,nbins);
+  ArrayXXd data(8,nbins);
   for (auto ao : output)
   {
+    double sf = SFs[currao];
       for (auto b : ao->bins()) 
       {
           data(0,currbin) = b.height();
           data(1,currbin) = b.heightErr();
+          data(2,currbin) = b.sumW();
+          data(3,currbin) = b.sumW2();
+          data(4,currbin) = b.sumWX();
+          data(5,currbin) = b.sumWX2();
+          data(6,currbin) = b.xWidth();
+          data(7,currbin) = sf;
           currbin++;
       }
+      currao++;
   }
+  //std::cerr << data << "\n";
+  //ArrayXXd data(2,nbins);
+  //for (auto ao : output)
+  //{
+      //for (auto b : ao->bins())
+      //{
+          //data(0,currbin) = b.height();
+          //data(1,currbin) = b.heightErr();
+          //currbin++;
+      //}
+  //}
 
 
   return data;
