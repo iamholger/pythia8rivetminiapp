@@ -6,7 +6,7 @@
 using namespace std;
 using namespace Pythia8;
 
-void run(size_t nEvents=10000, int seed=1234, bool verbose=true)
+void run(size_t nEvents=1000, int seed=1234, bool verbose=true)
 {
   Pythia pythia;
 
